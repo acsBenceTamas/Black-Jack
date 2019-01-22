@@ -1,4 +1,6 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, url_for
+import database_connection
+import json
 
 app = Flask(__name__)
 
@@ -10,7 +12,9 @@ def index():
 
 @app.route('/game')
 def game():
-    return render_template('game.html')
+    cards = database_connection.get_all_cards()
+    card_ids = [card['id'] for card in cards]
+    return render_template('game.html', cards=json.dumps(cards), card_ids=json.dumps(card_ids), image_path=url_for('static', filename='images/'))
 
 
 if __name__ == '__main__':

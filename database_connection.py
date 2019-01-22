@@ -42,3 +42,9 @@ def connection_handler(function):
         connection.close()
         return ret_value
     return wrapper
+
+
+@connection_handler
+def get_all_cards(cursor):
+    cursor.execute("""SELECT * FROM cards;""")
+    return cursor.fetchall()
