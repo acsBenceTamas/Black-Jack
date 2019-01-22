@@ -5,5 +5,18 @@
 {% endblock %}
 
 {% block content %}
+    <div id="game-space" data-cards="{{ cards }}" data-ids="{{ card_ids }}" data-image-path="{{ image_path }}">
+        <nav class="navbar">
+            <button id="button-new-game">New game</button>
+        </nav>
+        <div id="player-hand0"></div>
+        <div id="player-hands">
+            <div id="player-hand1">
+                <button class="btn-primary draw-card">Draw card</button>
+                <button class="btn-primary stop-drawing">Stop drawing</button>
+            </div>
+        </div>
+        <img src="{{ url_for('static', filename='images/blue_back.png') }}" width="138" height="211">
+    </div>
 
 {% endblock %}
