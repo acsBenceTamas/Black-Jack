@@ -10,8 +10,15 @@
         {% block head %} {% endblock %}
     </head>
     <body>
-        <nav class="navbar navbar-light bg-light">
-            <a class="btn-primary" href="{{ url_for('game') }}">Game</a>
+        <nav class="navbar navbar-light bg-light justify-content-left">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link {% if active_page == "index" %}active{% endif %}" href="{{ url_for('index') }}">Select Players</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_page == "game" %}active{% endif %}" href="{{ url_for('game') }}">Game</a>
+                </li>
+            </ul>
         </nav>
         {% block content %} {% endblock %}
     </body>

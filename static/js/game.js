@@ -4,20 +4,49 @@ const cards = JSON.parse(gameSpace.dataset.cards);
 const imagePath = gameSpace.dataset.imagePath;
 let deck;
 gameSpace.addEventListener('click', gameClick);
+let activePlayers = getActivePlayers();
+
+function getActivePlayers() {
+    const allPlayers = JSON.parse(localStorage.getItem('players'));
+    let activePlayers = [];
+    for (let player of allPlayers) {
+        if (Number(player.selected) === 1) {
+            activePlayers.push(player);
+        }
+    }
+    return activePlayers;
+}
 
 function gameClick(event) {
-    if (event.target.classList.contains('btn-primary') && event.target.classList.contains('draw-card')) {
-        drawCard(currentPlayer);
-    } else if (event.target.id == 'button-new-game') {
+    if (event.target.classList.contains('btn-primary')) {
+        if (event.target.classList.contains('draw-card')) {
+            drawCard(currentPlayer);
+            advanceRound();
+        } else if (event.target.classList.contains('')) {
+            stopDrawing(currentPlayer);
+        }
+    } else if (event.target.id.toString() === 'button-new-game') {
         startNewGame();
     }
 }
 
-function drawCard(currentPlayer) {
+function advanceRound() {
+    toggleButtonsForPlayer(currentPlayer);
+    currentPlayer = currentPlayer % activePlayers.length + 1;
+    toggleButtonsForPlayer(currentPlayer);
+}
+
+function toggleButtonsForPlayer(player) {
+    for (let button of document.querySelectorAll(`#player-hand${currentPlayer} button`)) {
+        button.classList.toggle("btn-primary");
+        button.classList.toggle("btn-secondary");
+    }
+}
+
+function drawCard(player) {
     const cardPosition = Math.floor(Math.random() * deck.length);
     const cardId = deck[cardPosition];
     deck.splice(cardPosition, 1);
-    console.log(deck, cardId);
     const card = getCardById(cardId);
     const img = document.createElement('img');
     img.classList.add('game-card');
@@ -25,8 +54,8 @@ function drawCard(currentPlayer) {
     img.dataset.value = card['value'];
     img.width = 69;
     img.height = 105;
-    document.getElementById('player-hand' + currentPlayer).appendChild(img);
-    countPoints(currentPlayer);
+    document.getElementById(`player-hand${player}`).appendChild(img);
+    countPoints(player);
 }
 
 function getCardById(id) {
@@ -43,10 +72,11 @@ function startNewGame() {
         cards[i - 1].remove();
     }
     deck = JSON.parse(gameSpace.dataset.ids);
-    drawCard(1);
-    drawCard(0);
-    drawCard(1);
-    drawCard(0);
+    for (let i = 0; i < 2 ; i++) {
+        for (let j = -1; j < activePlayers.length; j++ ) {
+            drawCard(j+1);
+        }
+    }
 }
 
 function countPoints(playerId) {
@@ -55,6 +85,30 @@ function countPoints(playerId) {
     for (let card of cards) {
         pointCount += Number(card.dataset.value);
     }
-    console.log(`#player-hand${playerId}`);
     document.getElementById(`player-hand${playerId}`).title = pointCount.toString();
 }
+
+function generatePlayerHands() {
+    createPlayerHand("bank");
+    for (i = 0; i < activePlayers.length; i++) {
+        createPlayerHand(i);
+    }
+}
+
+function createPlayerHand( index = "bank" ) {
+    let playerHand = document.createElement('div');
+    playerHand.id = isNaN(index) ? "player-hand0" : `player-hand${index+1}`;
+    playerHand.classList.add("player-hand");
+    playerHand.dataset.player = isNaN(index) ? "0" : (index+1).toString();
+    playerHand.dataset.toggle = "tooltip";
+    playerHand.title = "0";
+    let buttons = isNaN(index) ? "" :
+        `<button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} draw-card">Draw card</button>
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} stop-drawing">Stop drawing</button>
+        `;
+    playerHand.innerHTML = buttons + `<strong>Name:</strong> ${isNaN(index) ? "Bank" : activePlayers[index].name}`;
+    document.getElementById("player-hands").appendChild(playerHand);
+}
+
+generatePlayerHands();
+startNewGame();
