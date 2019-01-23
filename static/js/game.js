@@ -4,6 +4,7 @@ const cards = JSON.parse(gameSpace.dataset.cards);
 const imagePath = gameSpace.dataset.imagePath;
 let deck;
 gameSpace.addEventListener('click', gameClick);
+gameSpace.addEventListener("mouseover", gameHover);
 
 function gameClick(event) {
     if (event.target.classList.contains('btn-primary') && event.target.classList.contains('draw-card')) {
@@ -11,7 +12,12 @@ function gameClick(event) {
     } else if (event.target.id == 'button-new-game') {
         startNewGame();
     }
+}
 
+function gameHover(event) {
+    /*if (event.target.classList.contains("player-hand")) {
+        event.target.title = countPoints(event.target.dataset.player);
+    }*/
 }
 
 function drawCard(currentPlayer) {
@@ -27,6 +33,7 @@ function drawCard(currentPlayer) {
     img.width = 69;
     img.height = 105;
     document.getElementById('player-hand' + currentPlayer).appendChild(img);
+    countPoints(currentPlayer);
 }
 
 function getCardById(id) {
@@ -47,5 +54,14 @@ function startNewGame() {
     drawCard(0);
     drawCard(1);
     drawCard(0);
+}
 
+function countPoints(playerId) {
+    const cards = document.querySelectorAll(`#player-hand${playerId} .game-card`);
+    let pointCount = 0;
+    for (let card of cards) {
+        pointCount += Number(card.dataset.value);
+    }
+    console.log(`#player-hand${playerId}`);
+    document.getElementById(`player-hand${playerId}`).title = pointCount.toString();
 }
