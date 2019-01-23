@@ -2,9 +2,38 @@
 
 {% block head %}
     <title>Black-Jack homepage</title>
+    <script src="{{ url_for('static', filename='js/players.js') }}" defer></script>
 {% endblock %}
 
 {% block content %}
     <h2>Black-Jack</h2>
     <button class="btn-outline-dark" type="submit">START</button>
+    <div id="player-cards">
+        <div id="add-new-player" class="player-card">
+            <button class="btn-success" data-toggle="modal" data-target="#new-player-modal">Add New Player</button>
+        </div>
+    </div>
+
+
+    <div class="modal" tabindex="-1" role="dialog" id="new-player-modal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create new player</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label>Player name:
+                        <input type="text" size="20" maxlength="20" minlength="4" id="new-player-name" autofocus>
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal" onclick="addNewPlayer()">Add</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Discard</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

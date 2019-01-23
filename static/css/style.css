@@ -1,3 +1,21 @@
 .player-hand {
     border: black 1px solid;
 }
+
+#player-cards {
+    border: black 1px solid;
+    width: 80%;
+    text-align: center;
+}
+
+.player-card {
+    display: inline-table;
+    border: black 1px solid;
+    width: 90%;
+    margin: 10px;
+    padding: 5px;
+}
+.player-card table {
+    display: inline-table;
+    width: 90%;
+    }
