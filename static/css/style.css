@@ -19,3 +19,7 @@
     display: inline-table;
     width: 90%;
     }
+
+.player-card.selected {
+    background: green;
+}

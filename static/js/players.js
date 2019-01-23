@@ -6,10 +6,16 @@ function clickCardList(event) {
     if (event.target.classList.contains("delete-player")) {
         deletePlayer( event.target.closest(".player-card").dataset.name );
     } else if (event.target.classList.contains("select-player")) {
-        togglePlayerSelection( event.target.closest(".player-card").dataset.name );
-        event.target.innerText = event.target.innerText === "SELECT" ? "DESELECT" : "SELECT";
-        event.target.classList.toggle("btn-primary");
-        event.target.classList.toggle("btn-secondary");
+        console.log(localStorage.getItem('players'));
+        if ( countActivePlayers() === 4 && event.target.innerText === "SELECT") {
+            alert("You can only select up to 4 players");
+        } else {
+            togglePlayerSelection( event.target.closest(".player-card").dataset.name );
+            event.target.closest(".player-card").classList.toggle("selected");
+            event.target.innerText = event.target.innerText === "SELECT" ? "DESELECT" : "SELECT";
+            event.target.classList.toggle("btn-primary");
+            event.target.classList.toggle("btn-warning");
+        }
     }
 }
 
@@ -47,8 +53,12 @@ function displayPlayerCards() {
 function drawPlayerCard( player ) {
     let newPlayerCard = document.createElement("div");
     newPlayerCard.classList.add("player-card");
+    if (Number(player.selected) === 1) {
+        newPlayerCard.classList.add("selected");
+    }
     newPlayerCard.id = `player-name-${player.name}`;
     newPlayerCard.dataset.name = player.name;
+    newPlayerCard.dataset.selected = player.selected;
     newPlayerCard.innerHTML =
 `
 <table>
@@ -56,7 +66,7 @@ function drawPlayerCard( player ) {
         <th>Name:</th><td>${player.name}</td><th>Chips:</th><td>${player.chips}</td>
         <td>
             <button class="btn-danger delete-player">DELETE</button>
-            <button class="${Number(player.selected) === 0 ? 'btn-secondary' : 'btn-primary'} select-player">${Number(player.selected) === 0 ? 'DESELECT' : 'SELECT'}</button>
+            <button class="${Number(player.selected) === 0 ? 'btn-primary' : 'btn-warning'} select-player">${Number(player.selected) === 0 ? 'SELECT' : 'DESELECT'}</button>
         </td>
     </tr>
 </table>
@@ -86,7 +96,10 @@ function togglePlayerSelection( playerName ) {
             return;
         }
     }
+}
 
+function countActivePlayers() {
+    return JSON.parse(localStorage.getItem("players")).filter(player => Number(player.selected) === 1).length
 }
 
 displayPlayerCards();

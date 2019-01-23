@@ -4,7 +4,6 @@ const cards = JSON.parse(gameSpace.dataset.cards);
 const imagePath = gameSpace.dataset.imagePath;
 let deck;
 gameSpace.addEventListener('click', gameClick);
-gameSpace.addEventListener("mouseover", gameHover);
 
 function gameClick(event) {
     if (event.target.classList.contains('btn-primary') && event.target.classList.contains('draw-card')) {
@@ -12,12 +11,6 @@ function gameClick(event) {
     } else if (event.target.id == 'button-new-game') {
         startNewGame();
     }
-}
-
-function gameHover(event) {
-    /*if (event.target.classList.contains("player-hand")) {
-        event.target.title = countPoints(event.target.dataset.player);
-    }*/
 }
 
 function drawCard(currentPlayer) {
