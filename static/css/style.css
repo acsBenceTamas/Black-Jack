@@ -23,3 +23,11 @@
 .player-card.selected {
     background: green;
 }
+
+.chips-spent {
+    color: red;
+}
+
+.chips-left {
+    color: green;
+}

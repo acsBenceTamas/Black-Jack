@@ -1,4 +1,3 @@
-let currentPlayer = 1;
 let gameSpace = document.getElementById('game-space');
 const cards = JSON.parse(gameSpace.dataset.cards);
 const imagePath = gameSpace.dataset.imagePath;
@@ -7,22 +6,20 @@ if (localStorage.getItem("game-active") == null) {localStorage.setItem("game-act
 if (localStorage.getItem("game-state") == null) {generateDefaultGameState()}
 let deck = JSON.parse(gameSpace.dataset.ids);
 gameSpace.addEventListener('click', gameClick);
-let betAmounts = [];
 
 function generateDefaultGameState() {
     let defaultPlayerHands = [[]];
     let defaultBetAmounts = [];
     for (let player of activePlayers) {defaultPlayerHands.push([]); defaultBetAmounts.push(0);}
-    localStorage.setItem("game-state", JSON.stringify(
-        {
-            playerHands: defaultPlayerHands,
-            betAmounts: defaultBetAmounts,
-            currentPlayer: 1,
-            playersOut: [],
-            winners: [],
-            gameOver: false}
-        )
-    )
+    const defaultGameState = {
+        playerHands: defaultPlayerHands,
+        betAmounts: defaultBetAmounts,
+        currentPlayer: 1,
+        playersOut: [],
+        winners: [],
+        gameOver: false};
+    localStorage.setItem("game-state", JSON.stringify(defaultGameState));
+    return defaultGameState;
 }
 
 function getGameState() {
@@ -47,10 +44,13 @@ function getActivePlayers() {
 function endCurrentGame() {
     localStorage.setItem("game-active", "false");
     clearAllCards();
+    resetBetFields();
     generateDefaultGameState();
 }
 
 function gameClick(event) {
+    const currentPlayer = getGameState().currentPlayer;
+    console.log(getGameState().playerHands);
     if (event.target.id.toString() === 'button-new-game') {
         startNewGame();
     } else if (localStorage.getItem("game-active") === "true" && event.target.classList.contains('btn-primary')) {
@@ -75,10 +75,13 @@ function gameClick(event) {
 
 function addBetToPlayer( player, amount ) {
     if (activePlayers[player -1 ].chips >= amount) {
+        let gameState = getGameState();
         activePlayers[player -1 ].chips -= amount;
-        betAmounts[player - 1] += amount;
-        updatePlayerChipsInLocalStorage( player, -amount);
+        gameState.betAmounts[player - 1] += amount;
+        setGameState(gameState);
+        updatePlayerChipsInLocalStorage( player -1 , -amount);
         updateChipsFieldForPlayer( player, activePlayers[player -1 ].chips );
+        updateChipsSpentFieldForPlayer( player, amount);
     } else {
         alert("You don't have enough chips to bet any more.");
     }
@@ -104,6 +107,11 @@ function updateChipsFieldForPlayer( player, amount ) {
     document.querySelector(`#player-hand${player} .chips-left`).innerText = amount.toString();
 }
 
+function updateChipsSpentFieldForPlayer( player, amount ) {
+    let chipsSpent = document.querySelector(`#player-hand${player} .chips-spent`);
+    chipsSpent.innerText = (amount + Number(chipsSpent.innerText)).toString();
+}
+
 function createPlayerHand( index = "bank" ) {
     let playerHand = document.createElement('div');
     playerHand.id = isNaN(index) ? "player-hand0" : `player-hand${index+1}`;
@@ -113,7 +121,7 @@ function createPlayerHand( index = "bank" ) {
     playerHand.title = "0";
     let buttons = isNaN(index) ? "" :
         `<img src="${imagePath}chips.png" width="60" height="60"><br>
-        <span class="chips-left">${activePlayers[index].chips}</span><br>
+        <span class="chips-left">${activePlayers[index].chips}</span> <span class="chips-spent"></span><br>
         <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} draw-card">Draw card</button>
         <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} stop-drawing">Stop drawing</button>
         <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="5"> 5</button>
@@ -125,7 +133,6 @@ function createPlayerHand( index = "bank" ) {
         `;
     playerHand.innerHTML = buttons + `<strong>Name:</strong> ${isNaN(index) ? "Bank" : activePlayers[index].name}`;
     document.getElementById("player-hands").appendChild(playerHand);
-    betAmounts.push(0);
 }
 
 function getPlayerBetAmount( player ) {
@@ -133,19 +140,20 @@ function getPlayerBetAmount( player ) {
 }
 
 function advanceRound() {
-    let playersOut = getGameState().playersOut;
-    if (playersOut.length < activePlayers.length) {
-        toggleButtonsForPlayer(currentPlayer);
-        currentPlayer = currentPlayer % activePlayers.length + 1;
-        while (playersOut.includes(currentPlayer)) {
-            currentPlayer = currentPlayer % activePlayers.length + 1;
+    let gameState = getGameState();
+    if (gameState.playersOut.length < activePlayers.length) {
+        toggleButtonsForPlayer(gameState.currentPlayer);
+        gameState.currentPlayer = gameState.currentPlayer % activePlayers.length + 1;
+        while (gameState.playersOut.includes(gameState.currentPlayer)) {
+            gameState.currentPlayer = gameState.currentPlayer % activePlayers.length + 1;
         }
-        toggleButtonsForPlayer(currentPlayer);
+        toggleButtonsForPlayer(gameState.currentPlayer);
     } else {
         handleBank();
         setGameOverState(true);
         gameOver();
     }
+    setGameState(gameState)
 }
 
 function gameOver() {
@@ -186,7 +194,8 @@ function setGameOverState( state ) {
 }
 
 function toggleButtonsForPlayer(player) {
-    for (let button of document.querySelectorAll(`#player-hand${currentPlayer} button`)) {
+
+    for (let button of document.querySelectorAll(`#player-hand${player} button`)) {
         button.classList.toggle("btn-primary");
         button.classList.toggle("btn-secondary");
     }
@@ -225,8 +234,8 @@ function getCardById(id) {
 
 function startNewGame() {
     if (activePlayers.length > 0) {
-        clearAllCards();
         generateDefaultGameState();
+        clearAllCards();
         deck = JSON.parse(gameSpace.dataset.ids);
         if (localStorage.getItem("game-active") === "false") {
             for (let i = 0; i < 2 ; i++) {
@@ -235,9 +244,11 @@ function startNewGame() {
                 }
             }
             localStorage.setItem("game-active", "true");
-            toggleButtonsForPlayer(currentPlayer);
-            currentPlayer = 1;
-            toggleButtonsForPlayer(currentPlayer);
+            let gameState = getGameState();
+            toggleButtonsForPlayer(gameState.currentPlayer);
+            gameState.currentPlayer = 1;
+            toggleButtonsForPlayer(gameState.currentPlayer);
+            setGameState(gameState);
         } else {
             alert("You must end the current game first!");
         }
@@ -250,6 +261,13 @@ function clearAllCards() {
     let cards = document.getElementsByClassName('game-card');
     for (let i = cards.length; i > 0; i--) {
         cards[i - 1].remove();
+    }
+}
+
+function resetBetFields() {
+    for (let i=0 ; i < activePlayers.length; i++) {
+        document.querySelector(`#player-hand${i+1} .chips-left`).innerText = `${activePlayers[i].chips}`;
+        document.querySelector(`#player-hand${i+1} .chips-spent`).innerText = "";
     }
 }
 
