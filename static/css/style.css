@@ -31,3 +31,7 @@
 .chips-left {
     color: green;
 }
+
+.player-done {
+    background: darkgrey;
+}

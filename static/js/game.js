@@ -41,8 +41,15 @@ function getActivePlayers() {
     return activePlayers;
 }
 
+function tryEndCurrentGame() {
+    if (localStorage.getItem("game-active").toString() === "true") {
+        $('#end-game-modal').modal();
+    }
+}
+
 function endCurrentGame() {
     localStorage.setItem("game-active", "false");
+    unmarkPlayers();
     clearAllCards();
     resetBetFields();
     generateDefaultGameState();
@@ -50,7 +57,6 @@ function endCurrentGame() {
 
 function gameClick(event) {
     const currentPlayer = getGameState().currentPlayer;
-    console.log(getGameState().playerHands);
     if (event.target.id.toString() === 'button-new-game') {
         startNewGame();
     } else if (localStorage.getItem("game-active") === "true" && event.target.classList.contains('btn-primary')) {
@@ -116,20 +122,22 @@ function createPlayerHand( index = "bank" ) {
     let playerHand = document.createElement('div');
     playerHand.id = isNaN(index) ? "player-hand0" : `player-hand${index+1}`;
     playerHand.classList.add("player-hand");
+    if (getGameState().playersOut.includes(index+1)) {playerHand.classList.add("player-done");}
     playerHand.dataset.player = isNaN(index) ? "0" : (index+1).toString();
     playerHand.dataset.toggle = "tooltip";
     playerHand.title = "0";
+    const currentPlayer = getGameState().currentPlayer - 1;
     let buttons = isNaN(index) ? "" :
         `<img src="${imagePath}chips.png" width="60" height="60"><br>
-        <span class="chips-left">${activePlayers[index].chips}</span> <span class="chips-spent"></span><br>
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} draw-card">Draw card</button>
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} stop-drawing">Stop drawing</button>
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="5"> 5</button>
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="10"> 10</button>
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="50"> 50</button>
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="100"> 100</button>
+        <span class="chips-left">${activePlayers[index].chips}</span> <span class="chips-spent">0</span><br>
+        <button class="${index === currentPlayer ? 'btn-primary' : 'btn-secondary'} draw-card">Draw card</button>
+        <button class="${index === currentPlayer ? 'btn-primary' : 'btn-secondary'} stop-drawing">Stop drawing</button>
+        <button class="${index === currentPlayer ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="5"> 5</button>
+        <button class="${index === currentPlayer ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="10"> 10</button>
+        <button class="${index === currentPlayer ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="50"> 50</button>
+        <button class="${index === currentPlayer ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="100"> 100</button>
         <input type="text" class="bet-box" size="2" value="5">
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet" > BET</button>
+        <button class="${index === currentPlayer ? 'btn-primary' : 'btn-secondary'} bet" > BET</button>
         `;
     playerHand.innerHTML = buttons + `<strong>Name:</strong> ${isNaN(index) ? "Bank" : activePlayers[index].name}`;
     document.getElementById("player-hands").appendChild(playerHand);
@@ -162,7 +170,6 @@ function gameOver() {
     document.querySelector("#game-over-modal .game-over-text").remove();
     document.querySelector('#game-over-modal .modal-body').appendChild(generateGameOverText());
     modal.modal({backdrop: "static"});
-    localStorage.setItem("game-active", "false");
 }
 
 function generateGameOverText() {
@@ -232,23 +239,25 @@ function getCardById(id) {
     }
 }
 
-function startNewGame() {
+function startNewGame( force=false) {
+    if (force) {endCurrentGame();}
     if (activePlayers.length > 0) {
-        generateDefaultGameState();
-        clearAllCards();
-        deck = JSON.parse(gameSpace.dataset.ids);
         if (localStorage.getItem("game-active") === "false") {
+            let gameState = getGameState();
+            toggleButtonsForPlayer(gameState.currentPlayer);
+            gameState.currentPlayer = 1;
+            toggleButtonsForPlayer(gameState.currentPlayer);
+            generateDefaultGameState();
+            unmarkPlayers();
+            clearAllCards();
+            resetBetFields();
+            deck = JSON.parse(gameSpace.dataset.ids);
             for (let i = 0; i < 2 ; i++) {
                 for (let j = -1; j < activePlayers.length; j++ ) {
                     drawCard(j+1);
                 }
             }
             localStorage.setItem("game-active", "true");
-            let gameState = getGameState();
-            toggleButtonsForPlayer(gameState.currentPlayer);
-            gameState.currentPlayer = 1;
-            toggleButtonsForPlayer(gameState.currentPlayer);
-            setGameState(gameState);
         } else {
             alert("You must end the current game first!");
         }
@@ -267,7 +276,7 @@ function clearAllCards() {
 function resetBetFields() {
     for (let i=0 ; i < activePlayers.length; i++) {
         document.querySelector(`#player-hand${i+1} .chips-left`).innerText = `${activePlayers[i].chips}`;
-        document.querySelector(`#player-hand${i+1} .chips-spent`).innerText = "";
+        document.querySelector(`#player-hand${i+1} .chips-spent`).innerText = "0";
     }
 }
 
@@ -284,7 +293,18 @@ function countPoints(playerId) {
 function stopDrawing(player) {
     let gameState = getGameState();
     gameState.playersOut.push(player);
-    setGameState(gameState)
+    setGameState(gameState);
+    markPlayerAsDone(player);
+}
+
+function markPlayerAsDone(player) {
+    document.getElementById(`player-hand${player}`).classList.add("player-done");
+}
+
+function unmarkPlayers() {
+    for (let player of document.getElementsByClassName("player-hand")) {
+        player.classList.remove("player-done");
+    }
 }
 
 function handleBank() {
@@ -346,7 +366,7 @@ function givePrizesForWinners() {
     for (let winnerId in gameState.winners ) {
         updatePlayerChipsInLocalStorage( winnerId, 2*gameState.betAmounts[winnerId]);
         activePlayers[winnerId].chips += 2*gameState.betAmounts[winnerId];
-        updateChipsFieldForPlayer( Number(winnerId+1), activePlayers[winnerId].chips );
+        updateChipsFieldForPlayer( Number(winnerId)+1, activePlayers[winnerId].chips );
     }
 }
 

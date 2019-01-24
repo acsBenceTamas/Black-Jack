@@ -12,7 +12,7 @@
                     <button id="button-new-game" class="btn btn-success">New game</button>
                 </li>
                 <li class="nav-item">
-                    <button id="button-end-game" class="btn btn-danger" data-toggle="modal" data-target="#end-game-modal">End game</button>
+                    <button id="button-end-game" class="btn btn-danger" onclick="tryEndCurrentGame()">End game</button>
                 </li>
             </ul>
         </nav>
@@ -51,7 +51,7 @@
                     <div class="game-over-text"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success" data-dismiss="modal" onclick="startNewGame()">Start New Game</button>
+                    <button type="button" class="btn btn-success" data-dismiss="modal" onclick="startNewGame(force=true)">Start New Game</button>
                     <button type="button" class="btn btn-warning" data-dismiss="modal" onclick="endCurrentGame()">End Current Game</button>
                 </div>
             </div>
