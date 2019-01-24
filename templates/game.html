@@ -10,10 +10,20 @@
             <button id="button-new-game">New game</button>
         </nav>
         <div id="player-hands">
+            <div id="player-hand1" class="player-hand" data-player="1" data-toggle="tooltip" title="0">
+                <img src="{{ url_for('static', filename='images/chips.png') }}" width="60" height="60"><br>
+                <span id="chips-left" class="chips-left"></span><br>
+                <button class="btn-primary draw-card">Draw card</button>
+                <button class="btn-primary stop-drawing">Stop drawing</button><br>
+                <button id="bet5" class="bet-btn" data-value="5"> 5</button>
+                <button id="bet10" class="bet-btn" data-value="10"> 10</button>
+                <button id="bet50" class="bet-btn" data-value="50"> 50</button>
+                <button id="bet100" class="bet-btn" data-value="100"> 100</button>
+                <input id="bet-box" type="text" class="bet-box" size="2" value="5">
+                <button id="bet" class="bet" > BET</button>
+            </div>
         </div>
         <img src="{{ url_for('static', filename='images/blue_back.png') }}" width="138" height="211">
     </div>
-
-
 
 {% endblock %}

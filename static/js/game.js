@@ -27,6 +27,12 @@ function gameClick(event) {
         }
     } else if (event.target.id.toString() === 'button-new-game') {
         startNewGame();
+    } else if (event.target.classList.contains('bet-btn')) {
+        document.getElementById('bet-box').setAttribute("value", event.target.dataset.value);
+    } else if (event.target.classList.contains('bet')) {
+        let retchips = JSON.parse(localStorage.getItem('countchips'));
+        retchips['chips'] = retchips['chips'] - document.getElementById('bet-box').value;
+        document.getElementById('chips-left').innerHTML = retchips['chips'];
     }
 }
 
@@ -77,6 +83,10 @@ function startNewGame() {
             drawCard(j+1);
         }
     }
+    startingChips(currentPlayer)
+    let retchips = JSON.parse(localStorage.getItem('countchips'));
+    document.getElementById('chips-left').innerHTML = retchips['chips'];
+    console.log('retchips: ', retchips);
 }
 
 function countPoints(playerId) {
@@ -87,6 +97,21 @@ function countPoints(playerId) {
     }
     document.getElementById(`player-hand${playerId}`).title = pointCount.toString();
 }
+
+
+function startingChips(currentPlayer) {
+    let chips = {'player': currentPlayer, 'chips': 500};
+    localStorage.setItem('countchips', JSON.stringify(chips));
+}
+
+
+function countingChips(currentPlayer) {
+    let bet = document.getElementById('bet-box').value;
+
+
+}
+
+
 
 function generatePlayerHands() {
     createPlayerHand("bank");
