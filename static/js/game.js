@@ -5,6 +5,7 @@ const imagePath = gameSpace.dataset.imagePath;
 let deck;
 gameSpace.addEventListener('click', gameClick);
 let activePlayers = getActivePlayers();
+let betAmounts = [];
 
 function getActivePlayers() {
     const allPlayers = JSON.parse(localStorage.getItem('players'));
@@ -30,9 +31,28 @@ function gameClick(event) {
     } else if (event.target.classList.contains('bet-btn')) {
         document.getElementById('bet-box').setAttribute("value", event.target.dataset.value);
     } else if (event.target.classList.contains('bet')) {
-        let retchips = JSON.parse(localStorage.getItem('countchips'));
-        retchips['chips'] = retchips['chips'] - document.getElementById('bet-box').value;
-        document.getElementById('chips-left').innerHTML = retchips['chips'];
+        addBetToPlayer(currentPlayer, getPlayerBetAmount(player));
+    }
+}
+
+function getPlayerBetAmount( player ) {
+    return Number(document.querySelector(`#player-hand${player} .bet-box`).value);
+}
+
+function addBetToPlayer( player, amount ) {
+    activePlayers[player -1 ].chips -= amount;
+    betAmounts[player - 1] += amount;
+    updatePlayerChipsInLocalStorage( player, -amount);
+}
+
+function updatePlayerChipsInLocalStorage( player, amount) {
+    let name = activePlayers[player - 1].name;
+    let allPlayers = JSON.parse(localStorage.getItem('players'));
+    for ( let player of allPlayers) {
+        if (player.name === name) {
+            player.chips += amount;
+            break;
+        }
     }
 }
 
@@ -83,10 +103,6 @@ function startNewGame() {
             drawCard(j+1);
         }
     }
-    startingChips(currentPlayer)
-    let retchips = JSON.parse(localStorage.getItem('countchips'));
-    document.getElementById('chips-left').innerHTML = retchips['chips'];
-    console.log('retchips: ', retchips);
 }
 
 function countPoints(playerId) {
@@ -107,8 +123,6 @@ function startingChips(currentPlayer) {
 
 function countingChips(currentPlayer) {
     let bet = document.getElementById('bet-box').value;
-
-
 }
 
 
@@ -128,11 +142,20 @@ function createPlayerHand( index = "bank" ) {
     playerHand.dataset.toggle = "tooltip";
     playerHand.title = "0";
     let buttons = isNaN(index) ? "" :
-        `<button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} draw-card">Draw card</button>
+        `<img src="${imagePath}chips.png" width="60" height="60"><br>
+        <span class="chips-left">${activePlayers[index].chips}</span><br>
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} draw-card">Draw card</button>
         <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} stop-drawing">Stop drawing</button>
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="5"> 5</button>
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="10"> 10</button>
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="50"> 50</button>
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="100"> 100</button>
+        <input type="text" class="bet-box" size="2" value="5">
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet" > BET</button>
         `;
     playerHand.innerHTML = buttons + `<strong>Name:</strong> ${isNaN(index) ? "Bank" : activePlayers[index].name}`;
     document.getElementById("player-hands").appendChild(playerHand);
+    betAmounts.push(0);
 }
 
 generatePlayerHands();
