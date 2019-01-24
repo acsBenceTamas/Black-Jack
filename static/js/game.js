@@ -14,6 +14,12 @@ function gameClick(event) {
         }
     } else if (event.target.id == 'button-new-game') {
         startNewGame();
+    } else if (event.target.classList.contains('bet-btn')) {
+        document.getElementById('bet-box').setAttribute("value", event.target.dataset.value);
+    } else if (event.target.classList.contains('bet')) {
+        let retchips = JSON.parse(localStorage.getItem('countchips'));
+        retchips['chips'] = retchips['chips'] - document.getElementById('bet-box').value;
+        document.getElementById('chips-left').innerHTML = retchips['chips'];
     } else if (event.target.classList.contains('btn-primary') && event.target.classList.contains('stop-drawing')) {
         stopDrawing();
         handleBank();
@@ -30,7 +36,6 @@ function drawCard(currentPlayer) {
     const cardPosition = Math.floor(Math.random() * deck.length);
     const cardId = deck[cardPosition];
     deck.splice(cardPosition, 1);
-    // console.log(deck, cardId);
     const card = getCardById(cardId);
     const img = document.createElement('img');
     img.classList.add('game-card');
@@ -60,6 +65,10 @@ function startNewGame() {
     drawCard(0);
     drawCard(1);
     drawCard(0);
+    startingChips(currentPlayer)
+    let retchips = JSON.parse(localStorage.getItem('countchips'));
+    document.getElementById('chips-left').innerHTML = retchips['chips'];
+    console.log('retchips: ', retchips);
 }
 
 function countPoints(playerId) {
@@ -68,7 +77,6 @@ function countPoints(playerId) {
     for (let card of cards) {
         pointCount += Number(card.dataset.value);
     }
-    // console.log(`#player-hand${playerId}`);
     return document.getElementById(`player-hand${playerId}`).title = pointCount.toString();
 }
 
@@ -118,6 +126,21 @@ function playerLoseCheck(player) {
 function playerLost(player) {
     alert('Player lost');
 }
+
+
+function startingChips(currentPlayer) {
+    let chips = {'player': currentPlayer, 'chips': 500};
+    localStorage.setItem('countchips', JSON.stringify(chips));
+}
+
+
+function countingChips(currentPlayer) {
+    let bet = document.getElementById('bet-box').value;
+
+
+}
+
+
 
 function countPlayerCards(player) {
     return document.getElementById(`player-hand${player}`).getElementsByTagName('img').length;
