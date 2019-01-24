@@ -7,6 +7,7 @@ let deck;
 gameSpace.addEventListener('click', gameClick);
 let activePlayers = getActivePlayers();
 let betAmounts = [];
+let playersOut = [];
 
 function getActivePlayers() {
     const allPlayers = JSON.parse(localStorage.getItem('players'));
@@ -26,8 +27,9 @@ function gameClick(event) {
         if (event.target.classList.contains('draw-card')) {
             drawCard(currentPlayer);
             advanceRound();
-        } else if (event.target.classList.contains('')) {
+        } else if (event.target.classList.contains('stop-drawing')) {
             stopDrawing(currentPlayer);
+            advanceRound();
         } else if (event.target.classList.contains('bet-btn')) {
             const player = Number(event.target.closest(".player-hand").dataset.player);
             const amount = Number(event.target.dataset.value);
@@ -100,6 +102,9 @@ function getPlayerBetAmount( player ) {
 function advanceRound() {
     toggleButtonsForPlayer(currentPlayer);
     currentPlayer = currentPlayer % activePlayers.length + 1;
+    while (playersOut.includes(currentPlayer)) {
+        currentPlayer = currentPlayer % activePlayers.length + 1;
+    }
     toggleButtonsForPlayer(currentPlayer);
 }
 
@@ -145,6 +150,10 @@ function startNewGame() {
         }
     }
     gameActive = true;
+    toggleButtonsForPlayer(currentPlayer);
+    currentPlayer = 1;
+    toggleButtonsForPlayer(currentPlayer);
+    playersOut = [];
 }
 
 function countPoints(playerId) {
@@ -157,9 +166,8 @@ function countPoints(playerId) {
     return document.getElementById(`player-hand${playerId}`).title = pointCount.toString();
 }
 
-function stopDrawing() {
-    let scoreCurrentPlayer = Number(countPoints(1));
-    let scorePlayer0 = Number(countPoints(0));
+function stopDrawing(player) {
+    playersOut.push(player);
 }
 
 function handleBank() {
@@ -211,6 +219,7 @@ function generatePlayerHands() {
     for (i = 0; i < activePlayers.length; i++) {
         createPlayerHand(i);
     }
+}
 
 function startingChips(currentPlayer) {
     let chips = {'player': currentPlayer, 'chips': 500};
@@ -221,8 +230,6 @@ function startingChips(currentPlayer) {
 function countingChips(currentPlayer) {
     let bet = document.getElementById('bet-box').value;
 }
-
-
 
 function countPlayerCards(player) {
     return document.getElementById(`player-hand${player}`).getElementsByTagName('img').length;
