@@ -156,16 +156,20 @@ function advanceRound() {
             gameState.currentPlayer = gameState.currentPlayer % activePlayers.length + 1;
         }
         toggleButtonsForPlayer(gameState.currentPlayer);
+        setGameState(gameState);
     } else {
         handleBank();
         setGameOverState(true);
         gameOver();
     }
-    setGameState(gameState)
 }
 
 function gameOver() {
     givePrizesForWinners();
+    showGameOverScreen();
+}
+
+function showGameOverScreen() {
     let modal = $('#game-over-modal');
     document.querySelector("#game-over-modal .game-over-text").remove();
     document.querySelector('#game-over-modal .modal-body').appendChild(generateGameOverText());
@@ -190,21 +194,37 @@ function generateGameOverText() {
 function checkGameOver() {
     const gameState = getGameState();
     if (gameState.gameOver) {
-        gameOver();
+        showGameOverScreen();
     }
 }
 
 function setGameOverState( state ) {
     let gameState = getGameState();
     gameState.gameOver = state;
-    setGameState(gameState)
+    console.log(gameState.gameOver);
+    setGameState(gameState);
 }
 
 function toggleButtonsForPlayer(player) {
-
     for (let button of document.querySelectorAll(`#player-hand${player} button`)) {
         button.classList.toggle("btn-primary");
         button.classList.toggle("btn-secondary");
+    }
+}
+
+function setPlayerButtonsToDefault() {
+    for (let playerHand of document.getElementsByClassName('player-hand')) {
+        if (Number(playerHand.dataset.player) === 1) {
+            for (let button of playerHand.getElementsByTagName('button')) {
+                button.classList.add("btn-primary");
+                button.classList.remove("btn-secondary");
+            }
+        } else if (Number(playerHand.dataset.player) > 1) {
+            for (let button of playerHand.getElementsByTagName('button')) {
+                button.classList.remove("btn-primary");
+                button.classList.add("btn-secondary");
+            }
+        }
     }
 }
 
@@ -244,9 +264,7 @@ function startNewGame( force=false) {
     if (activePlayers.length > 0) {
         if (localStorage.getItem("game-active") === "false") {
             let gameState = getGameState();
-            toggleButtonsForPlayer(gameState.currentPlayer);
-            gameState.currentPlayer = 1;
-            toggleButtonsForPlayer(gameState.currentPlayer);
+            setPlayerButtonsToDefault();
             generateDefaultGameState();
             unmarkPlayers();
             clearAllCards();
@@ -310,7 +328,16 @@ function unmarkPlayers() {
 function handleBank() {
     let highestPlayerScore = getHighestPlayerScore();
     let bankScore = Number(countPoints(0));
-    while (bankScore <= highestPlayerScore && bankScore !== 21) {
+    while (
+        (
+            bankScore < highestPlayerScore.score
+            || ( highestPlayerScore.handSize < countPlayerCards(0) - 1 && bankScore === highestPlayerScore.score )
+        )
+        && bankScore !== 21
+        ) {
+        console.log("player score", highestPlayerScore.score, "bank", bankScore);
+        console.log("player card", highestPlayerScore.handSize, "bank", countPlayerCards(0));
+
         drawCard(0);
         bankScore = Number(countPoints(0));
     }
@@ -322,12 +349,13 @@ function handleBank() {
 }
 
 function getHighestPlayerScore() {
-    let highestScore = 0;
+    let highestScore = {score: 0, handSize: 0};
     let playerHands = document.getElementsByClassName("player-hand");
     for (let i = 1; i < playerHands.length ; i++) {
         let playerScore = Number(playerHands[i].title);
-        if (playerScore <= 21 && playerScore > highestScore) {
-            highestScore = playerScore;
+        if (playerScore <= 21 && playerScore > highestScore.score) {
+            highestScore.score = playerScore;
+            highestScore.handSize = countPlayerCards(i);
         }
     }
     return highestScore;
