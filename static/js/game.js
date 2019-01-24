@@ -6,11 +6,19 @@ let deck;
 gameSpace.addEventListener('click', gameClick);
 gameSpace.addEventListener("mouseover", gameHover);
 
+
+
 function gameClick(event) {
     if (event.target.classList.contains('btn-primary') && event.target.classList.contains('draw-card')) {
         drawCard(currentPlayer);
     } else if (event.target.id == 'button-new-game') {
         startNewGame();
+    } else if (event.target.classList.contains('bet-btn')) {
+        document.getElementById('bet-box').setAttribute("value", event.target.dataset.value);
+    } else if (event.target.classList.contains('bet')) {
+        let retchips = JSON.parse(localStorage.getItem('countchips'));
+        retchips['chips'] = retchips['chips'] - document.getElementById('bet-box').value;
+        document.getElementById('chips-left').innerHTML = retchips['chips'];
     }
 }
 
@@ -54,6 +62,10 @@ function startNewGame() {
     drawCard(0);
     drawCard(1);
     drawCard(0);
+    startingChips(currentPlayer)
+    let retchips = JSON.parse(localStorage.getItem('countchips'));
+    document.getElementById('chips-left').innerHTML = retchips['chips'];
+    console.log('retchips: ', retchips);
 }
 
 function countPoints(playerId) {
@@ -65,3 +77,17 @@ function countPoints(playerId) {
     console.log(`#player-hand${playerId}`);
     document.getElementById(`player-hand${playerId}`).title = pointCount.toString();
 }
+
+
+function startingChips(currentPlayer) {
+    let chips = {'player': currentPlayer, 'chips': 500};
+    localStorage.setItem('countchips', JSON.stringify(chips));
+}
+
+
+function countingChips(currentPlayer) {
+    let bet = document.getElementById('bet-box').value;
+
+
+}
+
