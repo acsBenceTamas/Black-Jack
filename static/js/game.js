@@ -2,6 +2,7 @@ let currentPlayer = 1;
 let gameSpace = document.getElementById('game-space');
 const cards = JSON.parse(gameSpace.dataset.cards);
 const imagePath = gameSpace.dataset.imagePath;
+let gameActive = false;
 let deck;
 gameSpace.addEventListener('click', gameClick);
 let activePlayers = getActivePlayers();
@@ -21,7 +22,7 @@ function getActivePlayers() {
 function gameClick(event) {
     if (event.target.id.toString() === 'button-new-game') {
         startNewGame();
-    } else if (event.target.classList.contains('btn-primary')) {
+    } else if (gameActive && event.target.classList.contains('btn-primary')) {
         if (event.target.classList.contains('draw-card')) {
             drawCard(currentPlayer);
             advanceRound();
@@ -143,6 +144,7 @@ function startNewGame() {
             drawCard(j+1);
         }
     }
+    gameActive = true;
 }
 
 function countPoints(playerId) {
@@ -152,6 +154,56 @@ function countPoints(playerId) {
         pointCount += Number(card.dataset.value);
     }
     document.getElementById(`player-hand${playerId}`).title = pointCount.toString();
+    return document.getElementById(`player-hand${playerId}`).title = pointCount.toString();
+}
+
+function stopDrawing() {
+    let scoreCurrentPlayer = Number(countPoints(1));
+    let scorePlayer0 = Number(countPoints(0));
+}
+
+function handleBank() {
+    let highestPlayerScore = Number(countPoints(1));
+    let bankScore = Number(countPoints(0));
+    while (bankScore <= highestPlayerScore && bankScore !== 21) {
+        drawCard(0);
+        bankScore = Number(countPoints(0));
+    }
+    if (bankScore > 21) {
+        playersWin();
+    } else {
+        checkWinners();
+    }
+}
+
+function playersWin() {
+    alert('Player wins');
+    gameActive = false;
+}
+
+function checkWinners() {
+    let playerScore = Number(countPoints(1));
+    let bankScore = Number(countPoints(0));
+    if (bankScore < playerScore) {
+        playerWins(1);
+    } else if (bankScore === playerScore) {
+        if (countPlayerCards(0) >= countPlayerCards(1)) {
+            playerWins(1);
+        } else {
+            playerLost(1);
+        }
+    } else {
+        playerLost(1);
+    }
+}
+
+function playerLoseCheck(player) {
+    return Number(countPoints(player)) > 21;
+}
+
+function playerLost(player) {
+    alert('Player lost');
+    gameActive = false;
 }
 
 function generatePlayerHands() {
@@ -159,6 +211,26 @@ function generatePlayerHands() {
     for (i = 0; i < activePlayers.length; i++) {
         createPlayerHand(i);
     }
+
+function startingChips(currentPlayer) {
+    let chips = {'player': currentPlayer, 'chips': 500};
+    localStorage.setItem('countchips', JSON.stringify(chips));
+}
+
+
+function countingChips(currentPlayer) {
+    let bet = document.getElementById('bet-box').value;
+}
+
+
+
+function countPlayerCards(player) {
+    return document.getElementById(`player-hand${player}`).getElementsByTagName('img').length;
+}
+
+function playerWins(player) {
+    alert('Player won!');
+    gameActive = false;
 }
 
 generatePlayerHands();
