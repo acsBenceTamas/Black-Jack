@@ -9,11 +9,15 @@ function clickCardList(event) {
         if ( countActivePlayers() === 4 && event.target.innerText === "SELECT") {
             alert("You can only select up to 4 players");
         } else {
-            togglePlayerSelection( event.target.closest(".player-card").dataset.name );
-            event.target.closest(".player-card").classList.toggle("selected");
-            event.target.innerText = event.target.innerText === "SELECT" ? "DESELECT" : "SELECT";
-            event.target.classList.toggle("btn-primary");
-            event.target.classList.toggle("btn-warning");
+            if (localStorage.getItem("game-active").toString() === "false") {
+                togglePlayerSelection( event.target.closest(".player-card").dataset.name );
+                event.target.closest(".player-card").classList.toggle("selected");
+                event.target.innerText = event.target.innerText === "SELECT" ? "DESELECT" : "SELECT";
+                event.target.classList.toggle("btn-primary");
+                event.target.classList.toggle("btn-warning");
+            } else {
+                alert("Game already in progress. End the game before changing players.");
+            }
         }
     }
 }

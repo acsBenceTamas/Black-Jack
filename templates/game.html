@@ -7,11 +7,55 @@
 {% block content %}
     <div id="game-space" data-cards="{{ cards }}" data-ids="{{ card_ids }}" data-image-path="{{ image_path }}">
         <nav class="navbar">
-            <button id="button-new-game">New game</button>
+            <ul class="nav justify-content-center">
+                <li class="nav-item">
+                    <button id="button-new-game" class="btn btn-success">New game</button>
+                </li>
+                <li class="nav-item">
+                    <button id="button-end-game" class="btn btn-danger" data-toggle="modal" data-target="#end-game-modal">End game</button>
+                </li>
+            </ul>
         </nav>
         <div id="player-hands">
         </div>
-        <img src="{{ url_for('static', filename='images/blue_back.png') }}" width="138" height="211">
+        <!-- <img src="{{ url_for('static', filename='images/blue_back.png') }}" width="138" height="211"> -->
+    </div>
+
+    <div class="modal" tabindex="-1" role="dialog" id="end-game-modal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">End current game</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Ending the game will result in all bets being lost. Are you sure you want to proceed?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="endCurrentGame()">End Game</button>
+                    <button type="button" class="btn btn-warning" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" role="dialog" id="game-over-modal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Game Over</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="game-over-text"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal" onclick="startNewGame()">Start New Game</button>
+                    <button type="button" class="btn btn-warning" data-dismiss="modal" onclick="endCurrentGame()">End Current Game</button>
+                </div>
+            </div>
+        </div>
     </div>
 
 {% endblock %}
