@@ -6,7 +6,6 @@ function clickCardList(event) {
     if (event.target.classList.contains("delete-player")) {
         deletePlayer( event.target.closest(".player-card").dataset.name );
     } else if (event.target.classList.contains("select-player")) {
-        console.log(localStorage.getItem('players'));
         if ( countActivePlayers() === 4 && event.target.innerText === "SELECT") {
             alert("You can only select up to 4 players");
         } else {
@@ -78,7 +77,6 @@ function deletePlayer( playerName ) {
     document.getElementById(`player-name-${playerName}`).remove();
     let playersInfo = JSON.parse(localStorage.getItem("players"));
     for (let i=0; i<playersInfo.length; i++) {
-        console.log(playersInfo[i].name.toString() === playerName.toString());
         if (playersInfo[i].name.toString() === playerName.toString()) {
             playersInfo.splice(i, 1);
             localStorage.setItem("players", JSON.stringify(playersInfo));

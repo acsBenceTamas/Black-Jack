@@ -19,30 +19,33 @@ function getActivePlayers() {
 }
 
 function gameClick(event) {
-    if (event.target.classList.contains('btn-primary')) {
+    if (event.target.id.toString() === 'button-new-game') {
+        startNewGame();
+    } else if (event.target.classList.contains('btn-primary')) {
         if (event.target.classList.contains('draw-card')) {
             drawCard(currentPlayer);
             advanceRound();
         } else if (event.target.classList.contains('')) {
             stopDrawing(currentPlayer);
+        } else if (event.target.classList.contains('bet-btn')) {
+            const player = Number(event.target.closest(".player-hand").dataset.player);
+            const amount = Number(event.target.dataset.value);
+            updateBetFieldForPlayer(player, amount);
+        } else if (event.target.classList.contains('bet')) {
+            addBetToPlayer(currentPlayer, getPlayerBetAmount(currentPlayer));
         }
-    } else if (event.target.id.toString() === 'button-new-game') {
-        startNewGame();
-    } else if (event.target.classList.contains('bet-btn')) {
-        document.getElementById('bet-box').setAttribute("value", event.target.dataset.value);
-    } else if (event.target.classList.contains('bet')) {
-        addBetToPlayer(currentPlayer, getPlayerBetAmount(player));
     }
 }
 
-function getPlayerBetAmount( player ) {
-    return Number(document.querySelector(`#player-hand${player} .bet-box`).value);
-}
-
 function addBetToPlayer( player, amount ) {
-    activePlayers[player -1 ].chips -= amount;
-    betAmounts[player - 1] += amount;
-    updatePlayerChipsInLocalStorage( player, -amount);
+    if (activePlayers[player -1 ].chips >= amount) {
+        activePlayers[player -1 ].chips -= amount;
+        betAmounts[player - 1] += amount;
+        updatePlayerChipsInLocalStorage( player, -amount);
+        updateChipsFieldForPlayer( player, activePlayers[player -1 ].chips );
+    } else {
+        alert("You don't have enough chips to bet any more.");
+    }
 }
 
 function updatePlayerChipsInLocalStorage( player, amount) {
@@ -54,6 +57,43 @@ function updatePlayerChipsInLocalStorage( player, amount) {
             break;
         }
     }
+    localStorage.setItem("players", JSON.stringify(allPlayers));
+}
+
+function updateBetFieldForPlayer( player, amount ) {
+    document.querySelector(`#player-hand${player} .bet-box`).value = amount;
+}
+
+function updateChipsFieldForPlayer( player, amount ) {
+    document.querySelector(`#player-hand${player} .chips-left`).innerText = amount.toString();
+}
+
+function createPlayerHand( index = "bank" ) {
+    let playerHand = document.createElement('div');
+    playerHand.id = isNaN(index) ? "player-hand0" : `player-hand${index+1}`;
+    playerHand.classList.add("player-hand");
+    playerHand.dataset.player = isNaN(index) ? "0" : (index+1).toString();
+    playerHand.dataset.toggle = "tooltip";
+    playerHand.title = "0";
+    let buttons = isNaN(index) ? "" :
+        `<img src="${imagePath}chips.png" width="60" height="60"><br>
+        <span class="chips-left">${activePlayers[index].chips}</span><br>
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} draw-card">Draw card</button>
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} stop-drawing">Stop drawing</button>
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="5"> 5</button>
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="10"> 10</button>
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="50"> 50</button>
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="100"> 100</button>
+        <input type="text" class="bet-box" size="2" value="5">
+        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet" > BET</button>
+        `;
+    playerHand.innerHTML = buttons + `<strong>Name:</strong> ${isNaN(index) ? "Bank" : activePlayers[index].name}`;
+    document.getElementById("player-hands").appendChild(playerHand);
+    betAmounts.push(0);
+}
+
+function getPlayerBetAmount( player ) {
+    return Number(document.querySelector(`#player-hand${player} .bet-box`).value);
 }
 
 function advanceRound() {
@@ -114,48 +154,11 @@ function countPoints(playerId) {
     document.getElementById(`player-hand${playerId}`).title = pointCount.toString();
 }
 
-
-function startingChips(currentPlayer) {
-    let chips = {'player': currentPlayer, 'chips': 500};
-    localStorage.setItem('countchips', JSON.stringify(chips));
-}
-
-
-function countingChips(currentPlayer) {
-    let bet = document.getElementById('bet-box').value;
-}
-
-
-
 function generatePlayerHands() {
     createPlayerHand("bank");
     for (i = 0; i < activePlayers.length; i++) {
         createPlayerHand(i);
     }
-}
-
-function createPlayerHand( index = "bank" ) {
-    let playerHand = document.createElement('div');
-    playerHand.id = isNaN(index) ? "player-hand0" : `player-hand${index+1}`;
-    playerHand.classList.add("player-hand");
-    playerHand.dataset.player = isNaN(index) ? "0" : (index+1).toString();
-    playerHand.dataset.toggle = "tooltip";
-    playerHand.title = "0";
-    let buttons = isNaN(index) ? "" :
-        `<img src="${imagePath}chips.png" width="60" height="60"><br>
-        <span class="chips-left">${activePlayers[index].chips}</span><br>
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} draw-card">Draw card</button>
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} stop-drawing">Stop drawing</button>
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="5"> 5</button>
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="10"> 10</button>
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="50"> 50</button>
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet-btn" data-value="100"> 100</button>
-        <input type="text" class="bet-box" size="2" value="5">
-        <button class="${index === 0 ? 'btn-primary' : 'btn-secondary'} bet" > BET</button>
-        `;
-    playerHand.innerHTML = buttons + `<strong>Name:</strong> ${isNaN(index) ? "Bank" : activePlayers[index].name}`;
-    document.getElementById("player-hands").appendChild(playerHand);
-    betAmounts.push(0);
 }
 
 generatePlayerHands();
